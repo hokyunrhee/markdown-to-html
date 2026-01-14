@@ -1,0 +1,242 @@
+/* Preview Styles - PDF Output Styles */
+.preview {
+  max-width: 210mm; /* A4 width */
+  min-height: 297mm; /* A4 height */
+  margin: 0 auto;
+  padding: 10mm;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  /* Korean Typography */
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 11pt;
+  line-height: 1.8;
+  color: #333;
+  word-break: keep-all;
+  line-break: strict;
+}
+
+/* Headings */
+.preview h1,
+.preview h2,
+.preview h3,
+.preview h4,
+.preview h5,
+.preview h6 {
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  word-break: keep-all;
+}
+
+.preview h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.preview h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.preview h3 {
+  font-size: 1.25em;
+}
+
+.preview h4 {
+  font-size: 1.1em;
+}
+
+.preview h5,
+.preview h6 {
+  font-size: 1em;
+  color: #555;
+}
+
+/* First heading - no top margin */
+.preview > h1:first-child,
+.preview > h2:first-child,
+.preview > h3:first-child {
+  margin-top: 0;
+}
+
+/* Paragraphs */
+.preview p {
+  margin-bottom: 1em;
+}
+
+/* Links */
+.preview a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.preview a:hover {
+  text-decoration: underline;
+}
+
+/* Lists */
+.preview ul,
+.preview ol {
+  margin-bottom: 1em;
+  padding-left: 2em;
+}
+
+.preview li {
+  margin-bottom: 0.25em;
+}
+
+.preview li > ul,
+.preview li > ol {
+  margin-top: 0.25em;
+  margin-bottom: 0;
+}
+
+/* Blockquotes */
+.preview blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid #2563eb;
+  background-color: #f8f9fa;
+  color: #555;
+}
+
+.preview blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Code - Inline */
+.preview code {
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+}
+
+/* Code - Block */
+.preview pre {
+  margin: 1em 0;
+  padding: 1em;
+  background-color: #2d2d2d;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.preview pre code {
+  display: block;
+  padding: 0;
+  background-color: transparent;
+  color: #ccc;
+  font-size: 0.875em;
+  line-height: 1.6;
+}
+
+/* Tables */
+.preview table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+}
+
+.preview th,
+.preview td {
+  padding: 0.75em 1em;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.preview th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.preview tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Horizontal Rule */
+.preview hr {
+  margin: 2em 0;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Images */
+.preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+/* Task Lists (GFM) */
+.preview input[type="checkbox"] {
+  margin-right: 0.5em;
+  transform: scale(1.1);
+}
+
+/* KaTeX Math */
+.preview .katex {
+  font-size: 1.1em;
+}
+
+.preview .katex-display {
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Mermaid Diagrams */
+.preview .mermaid {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+.preview .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Strikethrough */
+.preview del {
+  text-decoration: line-through;
+  color: #888;
+}
+
+/* Strong & Emphasis */
+.preview strong {
+  font-weight: 700;
+}
+
+.preview em {
+  font-style: italic;
+}
+
+/* Definition Lists */
+.preview dl {
+  margin: 1em 0;
+}
+
+.preview dt {
+  font-weight: 600;
+  margin-top: 0.5em;
+}
+
+.preview dd {
+  margin-left: 2em;
+  color: #555;
+}
+
+/* Print Styles for PDF */
+@media print {
+  .preview {
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+    min-height: auto;
+  }
+}
