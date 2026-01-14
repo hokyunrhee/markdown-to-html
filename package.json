@@ -1,0 +1,8 @@
+{
+  "name": "markdown-to-pdf",
+  "version": "0.0.1",
+  "description": "A client-side web application that converts Markdown to PDF in the browser.",
+  "scripts": {
+    "serve": "npx serve -l 3000"
+  }  
+}

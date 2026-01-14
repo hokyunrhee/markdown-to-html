@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown to PDF</title>
-    
-    <!-- Google Fonts - Noto Sans KR -->
+
+    <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    PDF 다운로드
+                    Download PDF
                 </button>
             </div>
         </header>
@@ -44,13 +44,13 @@
                 <div class="panel-header">
                     <span class="panel-title">Markdown</span>
                 </div>
-                <textarea id="editor" class="editor" placeholder="여기에 Markdown을 작성하세요..."></textarea>
+                <textarea id="editor" class="editor" placeholder="Write your Markdown here..."></textarea>
             </section>
             
             <!-- Preview Panel -->
             <section class="panel preview-panel">
                 <div class="panel-header">
-                    <span class="panel-title">미리보기</span>
+                    <span class="panel-title">Preview</span>
                 </div>
                 <div class="preview-wrapper">
                     <div id="preview" class="preview"></div>
@@ -62,7 +62,7 @@
     <!-- Loading Overlay -->
     <div id="loading" class="loading hidden">
         <div class="loading-spinner"></div>
-        <p>PDF 생성 중...</p>
+        <p>Generating PDF...</p>
     </div>
 
     <!-- Libraries -->

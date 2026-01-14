@@ -14,59 +14,59 @@ const App = (function() {
     const DEBOUNCE_DELAY = 300; // 300ms for preview update
     
     // Default sample markdown
-    const sampleMarkdown = `# Markdown to PDF 변환기
+    const sampleMarkdown = `# Markdown to PDF Converter
 
-한글 문서를 PDF로 변환할 수 있습니다. **굵은 글씨**와 *기울임체*도 지원합니다.
+Convert your documents to PDF. Supports **bold text** and *italics*.
 
-## 주요 기능
+## Key Features
 
-1. 실시간 미리보기
-2. 코드 하이라이팅
-3. 수학 수식 지원
-4. Mermaid 다이어그램
+1. Real-time preview
+2. Code syntax highlighting
+3. Mathematical expressions
+4. Mermaid diagrams
 
-### 코드 블록
+### Code Blocks
 
 \`\`\`javascript
 function greet(name) {
-    console.log(\`안녕하세요, \${name}님!\`);
+    console.log(\`Hello, \${name}!\`);
     return true;
 }
 \`\`\`
 
-### 수학 수식
+### Mathematical Expressions
 
-인라인 수식: $E = mc^2$
+Inline math: $E = mc^2$
 
-블록 수식:
+Block math:
 
 $$
 \\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
 $$
 
-### Mermaid 다이어그램
+### Mermaid Diagrams
 
 \`\`\`mermaid
 flowchart LR
-    A[시작] --> B{조건}
-    B -->|예| C[처리]
-    B -->|아니오| D[종료]
+    A[Start] --> B{Condition}
+    B -->|Yes| C[Process]
+    B -->|No| D[End]
     C --> D
 \`\`\`
 
-### 표
+### Tables
 
-| 기능 | 지원 여부 |
-|------|----------|
-| 한글 | ✅ |
-| 코드 | ✅ |
-| 수식 | ✅ |
-| 다이어그램 | ✅ |
+| Feature | Supported |
+|---------|-----------|
+| Text | ✅ |
+| Code | ✅ |
+| Math | ✅ |
+| Diagrams | ✅ |
 
-### 인용문
+### Blockquotes
 
-> 이것은 인용문입니다.
-> 여러 줄로 작성할 수 있습니다.
+> This is a blockquote.
+> It can span multiple lines.
 
 ---
 
@@ -98,7 +98,7 @@ flowchart LR
             await MarkdownParser.parse(content, preview);
         } catch (error) {
             console.error('Preview update error:', error);
-            preview.innerHTML = '<p class="error">미리보기 오류가 발생했습니다.</p>';
+            preview.innerHTML = '<p class="error">Preview error occurred.</p>';
         }
     }
     
@@ -144,7 +144,7 @@ flowchart LR
             await PDFGenerator.generate(preview, filename);
         } catch (error) {
             console.error('Download error:', error);
-            alert('PDF 생성 중 오류가 발생했습니다.');
+            alert('An error occurred while generating PDF.');
         } finally {
             downloadBtn.disabled = false;
         }
