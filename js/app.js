@@ -9,6 +9,12 @@ const App = (function() {
     let preview = null;
     let downloadBtn = null;
     
+    // Tab Elements
+    let tabEdit = null;
+    let tabPreview = null;
+    let editorPanel = null;
+    let previewPanel = null;
+    
     // Debounce timer
     let debounceTimer = null;
     const DEBOUNCE_DELAY = 300; // 300ms for preview update
@@ -81,7 +87,13 @@ flowchart LR
         preview = document.getElementById('preview');
         downloadBtn = document.getElementById('download-btn');
         
-        if (!editor || !preview || !downloadBtn) {
+        // Tabs and Panels
+        tabEdit = document.getElementById('tab-edit');
+        tabPreview = document.getElementById('tab-preview');
+        editorPanel = document.querySelector('.editor-panel');
+        previewPanel = document.querySelector('.preview-panel');
+        
+        if (!editor || !preview || !downloadBtn || !tabEdit || !tabPreview || !editorPanel || !previewPanel) {
             console.error('Required DOM elements not found');
             return false;
         }
@@ -128,6 +140,27 @@ flowchart LR
     }
     
     /**
+     * Switch between Edit and Preview tabs (Mobile)
+     * @param {string} mode - 'edit' or 'preview'
+     */
+    function switchTab(mode) {
+        if (mode === 'edit') {
+            tabEdit.classList.add('active');
+            tabPreview.classList.remove('active');
+            editorPanel.classList.add('active');
+            previewPanel.classList.remove('active');
+        } else {
+            tabEdit.classList.remove('active');
+            tabPreview.classList.add('active');
+            editorPanel.classList.remove('active');
+            previewPanel.classList.add('active');
+            
+            // Ensure preview is up to date when switching
+            updatePreview();
+        }
+    }
+    
+    /**
      * Handle PDF download
      */
     async function handleDownload() {
@@ -159,6 +192,10 @@ flowchart LR
         
         // Download button click
         downloadBtn.addEventListener('click', handleDownload);
+        
+        // Tab switching
+        tabEdit.addEventListener('click', () => switchTab('edit'));
+        tabPreview.addEventListener('click', () => switchTab('preview'));
         
         // Tab key support in editor
         editor.addEventListener('keydown', (e) => {
