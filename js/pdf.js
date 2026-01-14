@@ -80,18 +80,31 @@ const PDFGenerator = (function() {
             await new Promise(resolve => setTimeout(resolve, 200));
             
             const scale = 2;
-            const noBreakElements = getNoBreakElements(previewElement, scale);
             
-            // Render preview to canvas
-            const canvas = await html2canvas(previewElement, {
+            // Clone preview element to avoid visual flickering
+            const clonedPreview = previewElement.cloneNode(true);
+            clonedPreview.style.paddingTop = '0';
+            clonedPreview.style.paddingBottom = '0';
+            clonedPreview.style.position = 'absolute';
+            clonedPreview.style.left = '-9999px';
+            clonedPreview.style.top = '0';
+            document.body.appendChild(clonedPreview);
+            
+            const noBreakElements = getNoBreakElements(clonedPreview, scale);
+            
+            // Render cloned preview to canvas
+            const canvas = await html2canvas(clonedPreview, {
                 scale: scale,
                 useCORS: true,
                 logging: false,
                 scrollX: 0,
                 scrollY: 0,
-                windowWidth: previewElement.scrollWidth,
-                windowHeight: previewElement.scrollHeight
+                windowWidth: clonedPreview.scrollWidth,
+                windowHeight: clonedPreview.scrollHeight
             });
+            
+            // Remove cloned element
+            document.body.removeChild(clonedPreview);
             
             // Convert canvas to PDF using jsPDF directly
             const { jsPDF } = window.jspdf;
@@ -103,9 +116,10 @@ const PDFGenerator = (function() {
             
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const margin = 0; // Preview already has 10mm padding
-            const contentWidth = pdfWidth - (margin * 2);
-            const contentHeight = pdfHeight - (margin * 2);
+            const marginX = 0;  // Left/right margins (preview CSS already has 10mm padding)
+            const marginY = 15; // Top/bottom margins in mm for consistent spacing
+            const contentWidth = pdfWidth - (marginX * 2);
+            const contentHeight = pdfHeight - (marginY * 2); // Account for top and bottom margins
             
             // Scale to fit page width
             const imgWidth = canvas.width;
@@ -136,7 +150,7 @@ const PDFGenerator = (function() {
                 
                 const pageImgData = pageCanvas.toDataURL('image/png');
                 const pageHeightMM = pageHeight * ratio;
-                pdf.addImage(pageImgData, 'PNG', margin, margin, contentWidth, pageHeightMM);
+                pdf.addImage(pageImgData, 'PNG', marginX, marginY, contentWidth, pageHeightMM);
                 
                 currentY = actualBreakY;
                 

@@ -3,7 +3,7 @@
   max-width: 210mm; /* A4 width */
   min-height: 297mm; /* A4 height */
   margin: 0 auto;
-  padding: 10mm;
+  padding: 15mm 10mm;
   background-color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
