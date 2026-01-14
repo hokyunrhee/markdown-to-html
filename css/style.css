@@ -40,8 +40,8 @@
 
   --radius: 0.5rem;
 
-  --header-height: 60px;
-  --panel-header-height: 44px;
+  --header-height: 72px;
+  --panel-header-height: 56px;
 
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
@@ -106,7 +106,6 @@ body {
   font-weight: 500;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: colors 0.2s ease-in-out;
   border: 1px solid transparent;
   white-space: nowrap;
 }
@@ -161,6 +160,10 @@ body {
   flex-direction: column;
   flex: 1;
   min-width: 0;
+}
+
+.preview-panel {
+  position: relative; /* Important for absolute positioning of download button */
 }
 
 .editor-panel {
@@ -232,9 +235,9 @@ body {
 }
 
 .loading-spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid var(--muted);
+  width: 3rem;
+  height: 3rem;
+  border: 8px solid var(--muted);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -242,7 +245,7 @@ body {
 
 .loading p {
   color: var(--foreground);
-  font-size: 0.875rem;
+  font-size: 1.25rem;
   font-weight: 500;
 }
 
@@ -250,6 +253,20 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Floating Download Button */
+.btn-floating {
+  position: absolute;
+  top: calc((var(--panel-header-height) - 2.25rem) / 2);
+  right: 1.5rem;
+  z-index: 50;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-floating svg {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 /* Responsive */
@@ -323,5 +340,41 @@ body {
 
   .panel-header {
     display: none; /* Hide panel headers on mobile as tabs serve that purpose */
+  }
+
+  /* Mobile FAB Style for Download Button */
+  .btn-floating {
+    position: fixed;
+    bottom: 2rem;
+    right: 1.5rem;
+    top: auto;
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .btn-floating .btn-text {
+    display: none;
+  }
+
+  .btn-floating svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0) rotate(-45deg);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1) rotate(0);
+      opacity: 1;
+    }
   }
 }
