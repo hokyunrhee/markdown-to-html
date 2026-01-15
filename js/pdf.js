@@ -79,7 +79,7 @@ const PDFGenerator = (function() {
             // Small delay to ensure mermaid diagrams are rendered
             await new Promise(resolve => setTimeout(resolve, 200));
             
-            const scale = 2;
+            const scale = 1.5;
             
             // Clone preview element to avoid visual flickering
             const clonedPreview = previewElement.cloneNode(true);
@@ -150,7 +150,7 @@ const PDFGenerator = (function() {
                 
                 const pageImgData = pageCanvas.toDataURL('image/png');
                 const pageHeightMM = pageHeight * ratio;
-                pdf.addImage(pageImgData, 'PNG', marginX, marginY, contentWidth, pageHeightMM);
+                pdf.addImage(pageImgData, 'PNG', marginX, marginY, contentWidth, pageHeightMM, '', 'FAST');
                 
                 currentY = actualBreakY;
                 
