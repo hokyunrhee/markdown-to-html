@@ -35,19 +35,6 @@ const Storage = (function() {
     }
     
     /**
-     * Clear saved content
-     */
-    function clear() {
-        try {
-            localStorage.removeItem(STORAGE_KEY);
-            return true;
-        } catch (e) {
-            console.warn('Failed to clear LocalStorage:', e);
-            return false;
-        }
-    }
-    
-    /**
      * Debounced save - saves content after a delay
      * Cancels previous pending save if called again
      */
@@ -62,26 +49,10 @@ const Storage = (function() {
         }, DEBOUNCE_DELAY);
     }
     
-    /**
-     * Check if LocalStorage is available
-     */
-    function isAvailable() {
-        try {
-            const testKey = '__storage_test__';
-            localStorage.setItem(testKey, testKey);
-            localStorage.removeItem(testKey);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
-    
     // Public API
     return {
         save,
         load,
-        clear,
-        debouncedSave,
-        isAvailable
+        debouncedSave
     };
 })();

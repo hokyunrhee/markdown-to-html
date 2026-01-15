@@ -73,10 +73,6 @@ flowchart LR
 
 > This is a blockquote.
 > It can span multiple lines.
-
----
-
-© 2024 Markdown to PDF
 `;
     
     /**
