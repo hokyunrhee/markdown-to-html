@@ -50,7 +50,7 @@ const MarkdownParser = (function() {
             startOnLoad: false,
             theme: 'default',
             securityLevel: 'loose',
-            fontFamily: 'Noto Sans KR, sans-serif'
+            fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         });
     }
     

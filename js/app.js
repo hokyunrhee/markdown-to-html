@@ -7,7 +7,7 @@ const App = (function() {
     // DOM Elements
     let editor = null;
     let preview = null;
-    let downloadBtn = null;
+    let downloadButton = null;
     
     // Tab Elements
     let tabEdit = null;
@@ -81,7 +81,7 @@ flowchart LR
     function initElements() {
         editor = document.getElementById('editor');
         preview = document.getElementById('preview');
-        downloadBtn = document.getElementById('download-btn');
+        downloadButton = document.getElementById('download-btn');
         
         // Tabs and Panels
         tabEdit = document.getElementById('tab-edit');
@@ -89,7 +89,7 @@ flowchart LR
         editorPanel = document.querySelector('.editor-panel');
         previewPanel = document.querySelector('.preview-panel');
         
-        if (!editor || !preview || !downloadBtn || !tabEdit || !tabPreview || !editorPanel || !previewPanel) {
+        if (!editor || !preview || !downloadButton || !tabEdit || !tabPreview || !editorPanel || !previewPanel) {
             console.error('Required DOM elements not found');
             return false;
         }
@@ -161,7 +161,7 @@ flowchart LR
      */
     async function handleDownload() {
         // Disable button during generation
-        downloadBtn.disabled = true;
+        downloadButton.disabled = true;
         
         try {
             // Generate filename from first heading or default
@@ -175,7 +175,7 @@ flowchart LR
             console.error('Download error:', error);
             alert('An error occurred while generating PDF.');
         } finally {
-            downloadBtn.disabled = false;
+            downloadButton.disabled = false;
         }
     }
     
@@ -187,7 +187,7 @@ flowchart LR
         editor.addEventListener('input', handleEditorInput);
         
         // Download button click
-        downloadBtn.addEventListener('click', handleDownload);
+        downloadButton.addEventListener('click', handleDownload);
         
         // Tab switching
         tabEdit.addEventListener('click', () => switchTab('edit'));
@@ -250,7 +250,7 @@ flowchart LR
         // Initial preview render
         await updatePreview();
         
-        console.log('Markdown to PDF initialized');
+        console.info('Markdown to PDF initialized');
     }
     
     // Public API
