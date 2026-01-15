@@ -83,6 +83,7 @@ const PDFGenerator = (function() {
             
             // Clone preview element to avoid visual flickering
             const clonedPreview = previewElement.cloneNode(true);
+            clonedPreview.style.width = previewElement.offsetWidth + 'px'; // Preserve original width for consistent PDF output
             clonedPreview.style.paddingTop = '0';
             clonedPreview.style.paddingBottom = '0';
             clonedPreview.style.position = 'absolute';
