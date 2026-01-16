@@ -167,7 +167,10 @@
 /* Images */
 .preview img {
   max-width: 100%;
+  max-height: 250mm; /* Fit within A4 page height (297mm - margins) */
+  width: auto;
   height: auto;
+  object-fit: contain;
   margin: 1em 0;
   border-radius: 4px;
 }
@@ -197,7 +200,9 @@
 
 .preview .mermaid svg {
   max-width: 100%;
-  height: auto;
+  max-height: 240mm; /* Fit within A4 page height (297mm - margins) */
+  height: auto !important;
+  width: auto !important;
 }
 
 /* Strikethrough */
@@ -230,6 +235,93 @@
   color: #555;
 }
 
+/* ===========================================
+   Page Break Control for PDF Generation
+   =========================================== */
+
+/* Elements that should not be split across pages */
+.preview pre,
+.preview table,
+.preview blockquote,
+.preview .mermaid,
+.preview .katex-display,
+.preview img,
+.preview .code-block,
+.preview .table-wrapper,
+.preview .mermaid-wrapper,
+.preview .image-wrapper,
+.preview .no-break {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Headings should not be split and should stay with following content */
+.preview h1,
+.preview h2,
+.preview h3,
+.preview h4,
+.preview h5,
+.preview h6 {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+/* Keep first element after heading with the heading */
+.preview h1 + *,
+.preview h2 + *,
+.preview h3 + *,
+.preview h4 + *,
+.preview h5 + *,
+.preview h6 + * {
+  break-before: avoid;
+  page-break-before: avoid;
+}
+
+/* List items should try to stay together */
+.preview li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Avoid orphans and widows in paragraphs */
+.preview p {
+  orphans: 3;
+  widows: 3;
+}
+
+/* Force page break classes */
+.preview .page-break-before {
+  break-before: page;
+  page-break-before: always;
+}
+
+.preview .page-break-after {
+  break-after: page;
+  page-break-after: always;
+}
+
+/* Wrapper classes for better control */
+.preview .code-block,
+.preview .table-wrapper {
+  display: block;
+  margin: 1em 0;
+}
+
+/* Image and Mermaid wrappers with page-fit constraint */
+.preview .mermaid-wrapper,
+.preview .image-wrapper {
+  display: block;
+  margin: 1em 0;
+}
+
+.preview .mermaid-wrapper .mermaid svg {
+  max-height: 240mm;
+  height: auto !important;
+  width: auto !important;
+}
+
 /* Print Styles for PDF */
 @media print {
   .preview {
@@ -237,5 +329,26 @@
     padding: 0;
     max-width: none;
     min-height: auto;
+  }
+  
+  /* Reinforce page break rules in print mode */
+  .preview pre,
+  .preview table,
+  .preview blockquote,
+  .preview .mermaid,
+  .preview .katex-display,
+  .preview img {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .preview h1,
+  .preview h2,
+  .preview h3,
+  .preview h4,
+  .preview h5,
+  .preview h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
   }
 }

@@ -1,9 +1,127 @@
 /**
  * PDF Generator Module
- * Handles PDF generation using html2pdf.js
+ * Handles PDF generation using html2pdf.js with pagebreak optimization
  */
 
 const PDFGenerator = (function() {
+    /**
+     * Convert SVG element to PNG data URL via Canvas
+     * @param {SVGElement} svgElement - The SVG element to convert
+     * @param {number} scale - Scale factor for higher resolution (default: 2)
+     * @returns {Promise<string>} PNG data URL
+     */
+    async function convertSvgToImage(svgElement, scale = 2) {
+        return new Promise((resolve, reject) => {
+            // Get SVG dimensions
+            const bbox = svgElement.getBoundingClientRect();
+            // parseFloat handles strings like "800px" or "800" correctly
+            const width = bbox.width || parseFloat(svgElement.getAttribute('width')) || 800;
+            const height = bbox.height || parseFloat(svgElement.getAttribute('height')) || 600;
+            
+            // Clone SVG to avoid modifying the original
+            const svgClone = svgElement.cloneNode(true);
+            
+            // Ensure SVG has proper dimensions and namespace
+            svgClone.setAttribute('width', width);
+            svgClone.setAttribute('height', height);
+            if (!svgClone.getAttribute('xmlns')) {
+                svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            }
+            
+            // Serialize SVG to string
+            const serializer = new XMLSerializer();
+            let svgString = serializer.serializeToString(svgClone);
+            
+            // Encode SVG string to data URL
+            const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+            
+            // Create Image and load SVG
+            const img = new Image();
+            img.onload = function() {
+                // Create canvas with scaled dimensions for better quality
+                const canvas = document.createElement('canvas');
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+                
+                const ctx = canvas.getContext('2d');
+                // Fill with white background (SVGs may have transparent bg)
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Scale and draw
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to PNG data URL
+                const pngDataUrl = canvas.toDataURL('image/png');
+                resolve(pngDataUrl);
+            };
+            
+            img.onerror = function(e) {
+                console.error('Failed to load SVG as image:', e);
+                reject(new Error('Failed to convert SVG to image'));
+            };
+            
+            img.src = svgDataUrl;
+        });
+    }
+    
+    /**
+     * Convert all Mermaid SVGs to images for PDF generation
+     * @param {HTMLElement} container - The container with Mermaid diagrams
+     * @returns {Array} Array of objects containing element and original SVG for restoration
+     */
+    async function convertMermaidToImages(container) {
+        const mermaidElements = container.querySelectorAll('.mermaid');
+        const originalSvgs = [];
+        
+        for (const mermaidEl of mermaidElements) {
+            const svg = mermaidEl.querySelector('svg');
+            if (!svg) continue;
+            
+            try {
+                // Store original SVG HTML for restoration
+                originalSvgs.push({
+                    element: mermaidEl,
+                    originalHtml: mermaidEl.innerHTML
+                });
+                
+                // Convert SVG to PNG
+                const pngDataUrl = await convertSvgToImage(svg);
+                
+                // Get dimensions for the image
+                const bbox = svg.getBoundingClientRect();
+                
+                // Replace SVG with IMG
+                const img = document.createElement('img');
+                img.src = pngDataUrl;
+                img.style.width = bbox.width + 'px';
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto'; // Maintain aspect ratio
+                img.alt = 'Mermaid diagram';
+                
+                // Clear and append image
+                mermaidEl.innerHTML = '';
+                mermaidEl.appendChild(img);
+            } catch (error) {
+                console.warn('Failed to convert Mermaid SVG to image:', error);
+                // Keep original SVG if conversion fails
+            }
+        }
+        
+        return originalSvgs;
+    }
+    
+    /**
+     * Restore original Mermaid SVGs after PDF generation
+     * @param {Array} originalSvgs - Array of objects with element and original HTML
+     */
+    function restoreMermaidSvgs(originalSvgs) {
+        for (const { element, originalHtml } of originalSvgs) {
+            element.innerHTML = originalHtml;
+        }
+    }
+    
     /**
      * Wait for fonts to be fully loaded
      */
@@ -22,7 +140,7 @@ const PDFGenerator = (function() {
         const images = container.querySelectorAll('img');
         const promises = Array.from(images).map(img => {
             if (img.complete) return Promise.resolve();
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 img.onload = resolve;
                 img.onerror = resolve; // Don't fail on broken images
             });
@@ -31,36 +149,80 @@ const PDFGenerator = (function() {
     }
     
     /**
-     * Get positions of elements that should not be split across pages
+     * Wait for Mermaid diagrams to render
      */
-    function getNoBreakElements(previewElement, scale) {
-        const selectors = 'table, pre, h1, h2, h3, h4, h5, h6, blockquote, .mermaid, .katex-display';
-        const elements = previewElement.querySelectorAll(selectors);
-        return Array.from(elements).map(el => ({
-            top: el.offsetTop * scale,
-            bottom: (el.offsetTop + el.offsetHeight) * scale,
-            height: el.offsetHeight * scale,
-            tag: el.tagName.toLowerCase()
-        }));
+    async function waitForMermaid(container) {
+        const mermaidElements = container.querySelectorAll('.mermaid');
+        if (mermaidElements.length === 0) return;
+        
+        // Check if all mermaid elements have SVG content
+        const allRendered = Array.from(mermaidElements).every(el => 
+            el.querySelector('svg') !== null
+        );
+        
+        if (!allRendered) {
+            // Wait a bit more for mermaid to finish rendering
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
     }
     
     /**
-     * Find safe page break position that doesn't cut elements
+     * Get html2pdf.js configuration options
      */
-    function findSafePageBreak(idealBreakY, noBreakElements, minPageHeight) {
-        // Check if ideal break point would cut any element
-        for (const el of noBreakElements) {
-            // If break would occur inside this element
-            if (idealBreakY > el.top && idealBreakY < el.bottom) {
-                // Move break to before this element (with small margin)
-                const safeBreak = el.top - 10; // 10px margin before element
-                // Only adjust if it doesn't make page too short (at least 30% of ideal)
-                if (safeBreak > minPageHeight) {
-                    return { adjusted: true, breakY: safeBreak, reason: el.tag };
-                }
+    function getOptions(filename) {
+        return {
+            // Margins: [top, left, bottom, right] in mm
+            margin: [15, 10, 15, 10],
+            filename: filename.endsWith('.pdf') ? filename : `${filename}.pdf`,
+            image: { 
+                type: 'jpeg', 
+                quality: 0.95 
+            },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                letterRendering: true
+            },
+            jsPDF: {
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'portrait'
+            },
+            pagebreak: {
+                // Use all available modes for best results
+                mode: ['avoid-all', 'css', 'legacy'],
+                // Force page break before these selectors
+                before: '.page-break-before',
+                // Force page break after these selectors
+                after: '.page-break-after',
+                // Avoid breaking inside these elements
+                avoid: [
+                    // Code blocks
+                    'pre',
+                    '.code-block',
+                    // Tables
+                    'table',
+                    '.table-wrapper',
+                    // Blockquotes
+                    'blockquote',
+                    // Diagrams
+                    '.mermaid',
+                    '.mermaid-wrapper',
+                    // Math expressions
+                    '.katex-display',
+                    // Headings (should stay with following content)
+                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    // Images
+                    'img',
+                    '.image-wrapper',
+                    // Lists (avoid breaking individual items)
+                    'li',
+                    // Custom no-break class
+                    '.no-break'
+                ]
             }
-        }
-        return { adjusted: false, breakY: idealBreakY, reason: null };
+        };
     }
     
     /**
@@ -71,103 +233,51 @@ const PDFGenerator = (function() {
         const loading = document.getElementById('loading');
         if (loading) loading.classList.remove('hidden');
         
+        // Store original padding to restore after PDF generation
+        const originalPadding = previewElement.style.padding;
+        
+        // Store original SVGs for restoration
+        let originalSvgs = [];
+        
         try {
-            // Wait for fonts and images
+            // Wait for all content to be ready
             await waitForFonts();
             await waitForImages(previewElement);
+            await waitForMermaid(previewElement);
             
-            // Small delay to ensure mermaid diagrams are rendered
+            // Convert Mermaid SVGs to images for better PDF rendering
+            // html2canvas has issues with complex SVGs, so we convert them to PNG
+            originalSvgs = await convertMermaidToImages(previewElement);
+            
+            // Wait for converted images to load
+            await waitForImages(previewElement);
+            
+            // Small additional delay for any final rendering
             await new Promise(resolve => setTimeout(resolve, 200));
             
-            const scale = 1.5;
+            // Remove padding before PDF generation (margin is handled by html2pdf)
+            previewElement.style.padding = '0';
             
-            // Clone preview element to avoid visual flickering
-            const clonedPreview = previewElement.cloneNode(true);
-            clonedPreview.style.width = previewElement.offsetWidth + 'px'; // Preserve original width for consistent PDF output
-            clonedPreview.style.paddingTop = '0';
-            clonedPreview.style.paddingBottom = '0';
-            clonedPreview.style.position = 'absolute';
-            clonedPreview.style.left = '-9999px';
-            clonedPreview.style.top = '0';
-            document.body.appendChild(clonedPreview);
+            // Get configuration options
+            const options = getOptions(filename);
             
-            const noBreakElements = getNoBreakElements(clonedPreview, scale);
-            
-            // Render cloned preview to canvas
-            const canvas = await html2canvas(clonedPreview, {
-                scale: scale,
-                useCORS: true,
-                logging: false,
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: clonedPreview.scrollWidth,
-                windowHeight: clonedPreview.scrollHeight
-            });
-            
-            // Remove cloned element
-            document.body.removeChild(clonedPreview);
-            
-            // Convert canvas to PDF using jsPDF directly
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-            
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const marginX = 0;  // Left/right margins (preview CSS already has 10mm padding)
-            const marginY = 15; // Top/bottom margins in mm for consistent spacing
-            const contentWidth = pdfWidth - (marginX * 2);
-            const contentHeight = pdfHeight - (marginY * 2); // Account for top and bottom margins
-            
-            // Scale to fit page width
-            const imgWidth = canvas.width;
-            const imgHeight = canvas.height;
-            const ratio = contentWidth / imgWidth;
-            const minPageHeightPx = imgHeight * 0.3; // Minimum 30% of ideal page height
-            
-            // Handle multi-page with smart page breaks
-            let currentY = 0; // Current position in canvas pixels
-            let pageNum = 1;
-            const idealPageHeight = contentHeight / ratio; // Ideal page height in canvas pixels
-            
-            while (currentY < imgHeight) {
-                // Calculate ideal break point
-                const idealBreakY = currentY + idealPageHeight;
-                
-                // Find safe break point that doesn't cut elements
-                const safeBreak = findSafePageBreak(idealBreakY, noBreakElements, currentY + minPageHeightPx);
-                const actualBreakY = Math.min(safeBreak.breakY, imgHeight);
-                const pageHeight = actualBreakY - currentY;
-                
-                // Create a temporary canvas for this page's portion
-                const pageCanvas = document.createElement('canvas');
-                pageCanvas.width = imgWidth;
-                pageCanvas.height = pageHeight;
-                const ctx = pageCanvas.getContext('2d');
-                ctx.drawImage(canvas, 0, currentY, imgWidth, pageHeight, 0, 0, imgWidth, pageHeight);
-                
-                const pageImgData = pageCanvas.toDataURL('image/png');
-                const pageHeightMM = pageHeight * ratio;
-                pdf.addImage(pageImgData, 'PNG', marginX, marginY, contentWidth, pageHeightMM, '', 'FAST');
-                
-                currentY = actualBreakY;
-                
-                if (currentY < imgHeight) {
-                    pdf.addPage();
-                    pageNum++;
-                }
-            }
-            
-            pdf.save(filename.endsWith('.pdf') ? filename : `${filename}.pdf`);
+            // Generate PDF directly from the preview element
+            // html2pdf.js handles the element rendering internally
+            await html2pdf()
+                .set(options)
+                .from(previewElement)
+                .save();
             
             return true;
         } catch (error) {
             console.error('PDF generation error:', error);
             throw error;
         } finally {
+            // Restore original Mermaid SVGs (keep preview interactive/scalable)
+            restoreMermaidSvgs(originalSvgs);
+            
+            // Restore original padding
+            previewElement.style.padding = originalPadding;
             // Hide loading indicator
             if (loading) loading.classList.add('hidden');
         }

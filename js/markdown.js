@@ -18,25 +18,42 @@ const MarkdownParser = (function() {
             pedantic: false
         });
         
-        // Custom renderer for code blocks
+        // Custom renderer with wrapper classes for page break control
         const renderer = new marked.Renderer();
-        const originalCodeRenderer = renderer.code.bind(renderer);
         
+        // Code blocks - wrap in .code-block for page break control
         renderer.code = function(code, language) {
-            // Handle mermaid diagrams
+            // Handle mermaid diagrams - wrap in .mermaid-wrapper
             if (language === 'mermaid') {
                 const id = `mermaid-${mermaidIdCounter++}`;
-                return `<div class="mermaid" id="${id}">${escapeHtml(code)}</div>`;
+                return `<div class="mermaid-wrapper"><div class="mermaid" id="${id}">${escapeHtml(code)}</div></div>`;
             }
             
-            // Handle regular code with Prism highlighting
+            // Handle regular code with Prism highlighting - wrap in .code-block
             if (language && Prism.languages[language]) {
                 const highlighted = Prism.highlight(code, Prism.languages[language], language);
-                return `<pre class="language-${language}"><code class="language-${language}">${highlighted}</code></pre>`;
+                return `<div class="code-block"><pre class="language-${language}"><code class="language-${language}">${highlighted}</code></pre></div>`;
             }
             
-            // Fallback for unknown languages
-            return `<pre><code class="language-${language || 'text'}">${escapeHtml(code)}</code></pre>`;
+            // Fallback for unknown languages - wrap in .code-block
+            return `<div class="code-block"><pre><code class="language-${language || 'text'}">${escapeHtml(code)}</code></pre></div>`;
+        };
+        
+        // Tables - wrap in .table-wrapper for page break control
+        renderer.table = function(header, body) {
+            return `<div class="table-wrapper"><table><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+        };
+        
+        // Images - wrap in .image-wrapper for page break control
+        renderer.image = function(href, title, text) {
+            const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
+            const altAttr = text ? ` alt="${escapeHtml(text)}"` : '';
+            return `<div class="image-wrapper"><img src="${href}"${altAttr}${titleAttr} loading="lazy"></div>`;
+        };
+        
+        // Blockquotes - add .no-break class
+        renderer.blockquote = function(quote) {
+            return `<blockquote class="no-break">${quote}</blockquote>`;
         };
         
         marked.use({ renderer });
@@ -115,6 +132,8 @@ const MarkdownParser = (function() {
      */
     async function renderMermaid(container) {
         const mermaidElements = container.querySelectorAll('.mermaid');
+        // A4 page height minus margins (in pixels, assuming 96 DPI: 240mm ≈ 907px)
+        const maxHeightPx = 907;
         
         for (const element of mermaidElements) {
             const id = element.id || `mermaid-${Date.now()}`;
@@ -123,6 +142,21 @@ const MarkdownParser = (function() {
             try {
                 const { svg } = await mermaid.render(id + '-svg', code);
                 element.innerHTML = svg;
+                
+                // Scale down SVG if it exceeds page height
+                const svgElement = element.querySelector('svg');
+                if (svgElement) {
+                    const svgHeight = svgElement.getBoundingClientRect().height;
+                    if (svgHeight > maxHeightPx) {
+                        // Remove fixed width/height attributes and let CSS handle scaling
+                        svgElement.removeAttribute('height');
+                        svgElement.removeAttribute('width');
+                        svgElement.style.maxHeight = maxHeightPx + 'px';
+                        svgElement.style.width = 'auto';
+                        svgElement.style.height = 'auto';
+                        svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    }
+                }
             } catch (e) {
                 console.warn('Mermaid error:', e);
                 element.innerHTML = `<pre class="mermaid-error">Diagram Error: ${escapeHtml(e.message)}</pre>`;
