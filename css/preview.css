@@ -96,7 +96,7 @@
 
 /* Blockquotes */
 .preview blockquote {
-  margin: 1em 0;
+  margin: 0;
   padding: 0.5em 1em;
   border-left: 4px solid #2563eb;
   background-color: #f8f9fa;
@@ -118,7 +118,7 @@
 
 /* Code - Block */
 .preview pre {
-  margin: 1em 0;
+  margin: 0;
   padding: 1em;
   background-color: #2d2d2d;
   border-radius: 8px;
@@ -157,6 +157,13 @@
   background-color: #fafafa;
 }
 
+/* Keep table header and individual rows together during page breaks */
+.preview thead,
+.preview tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
 /* Horizontal Rule */
 .preview hr {
   margin: 2em 0;
@@ -171,7 +178,7 @@
   width: auto;
   height: auto;
   object-fit: contain;
-  margin: 1em 0;
+  margin: 0;
   border-radius: 4px;
 }
 
@@ -190,11 +197,13 @@
   margin: 1em 0;
   overflow-x: auto;
   overflow-y: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* Mermaid Diagrams */
 .preview .mermaid {
-  margin: 1.5em 0;
+  margin: 0;
   text-align: center;
 }
 
@@ -240,14 +249,11 @@
    =========================================== */
 
 /* Elements that should not be split across pages */
+/* Note: blockquote and katex use wrappers for page break control */
 .preview pre,
-.preview table,
-.preview blockquote,
 .preview .mermaid,
-.preview .katex-display,
 .preview img,
 .preview .code-block,
-.preview .table-wrapper,
 .preview .mermaid-wrapper,
 .preview .image-wrapper,
 .preview .no-break {
@@ -303,6 +309,8 @@
 }
 
 /* Wrapper classes for better control */
+/* Wrapper elements handle margin, inner elements stay margin-free for clean page breaks */
+.preview .blockquote-wrapper,
 .preview .code-block,
 .preview .table-wrapper {
   display: block;
@@ -314,6 +322,12 @@
 .preview .image-wrapper {
   display: block;
   margin: 1em 0;
+}
+
+/* Blockquote wrapper - avoid page break inside */
+.preview .blockquote-wrapper {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 .preview .mermaid-wrapper .mermaid svg {
@@ -330,18 +344,23 @@
     max-width: none;
     min-height: auto;
   }
-  
+
   /* Reinforce page break rules in print mode */
   .preview pre,
-  .preview table,
-  .preview blockquote,
+  .preview .blockquote-wrapper,
   .preview .mermaid,
   .preview .katex-display,
   .preview img {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
-  
+
+  .preview thead,
+  .preview tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
   .preview h1,
   .preview h2,
   .preview h3,

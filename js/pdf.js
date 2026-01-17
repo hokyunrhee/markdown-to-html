@@ -190,8 +190,8 @@ const PDFGenerator = (function() {
                 orientation: 'portrait'
             },
             pagebreak: {
-                // Use all available modes for best results
-                mode: ['avoid-all', 'css', 'legacy'],
+                // Use css and legacy modes (avoid-all prevents natural table breaks)
+                mode: ['css', 'legacy'],
                 // Force page break before these selectors
                 before: '.page-break-before',
                 // Force page break after these selectors
@@ -201,11 +201,11 @@ const PDFGenerator = (function() {
                     // Code blocks
                     'pre',
                     '.code-block',
-                    // Tables
-                    'table',
-                    '.table-wrapper',
-                    // Blockquotes
-                    'blockquote',
+                    // Table rows (allow table to break naturally at row boundaries)
+                    'thead',
+                    'tr',
+                    // Blockquotes (use wrapper for margin separation)
+                    '.blockquote-wrapper',
                     // Diagrams
                     '.mermaid',
                     '.mermaid-wrapper',

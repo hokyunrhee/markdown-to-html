@@ -51,9 +51,9 @@ const MarkdownParser = (function() {
             return `<div class="image-wrapper"><img src="${href}"${altAttr}${titleAttr} loading="lazy"></div>`;
         };
         
-        // Blockquotes - add .no-break class
+        // Blockquotes - wrap in .blockquote-wrapper for page break control
         renderer.blockquote = function(quote) {
-            return `<blockquote class="no-break">${quote}</blockquote>`;
+            return `<div class="blockquote-wrapper"><blockquote>${quote}</blockquote></div>`;
         };
         
         marked.use({ renderer });
@@ -118,6 +118,8 @@ const MarkdownParser = (function() {
                     throwOnError: false,
                     output: 'html'
                 });
+                // Note: Don't wrap in <div> as display math may appear inside <p> tags
+                // Page break control is applied directly to .katex-display via CSS
                 html = html.replace(placeholder, rendered);
             } catch (e) {
                 console.warn('KaTeX error:', e);
