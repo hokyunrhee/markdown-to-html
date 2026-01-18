@@ -20,9 +20,9 @@ const App = (function() {
     const DEBOUNCE_DELAY = 300; // 300ms for preview update
     
     // Default sample markdown
-    const sampleMarkdown = `# Markdown to PDF Converter
+    const sampleMarkdown = `# Markdown to HTML Converter
 
-Convert your documents to PDF. Supports **bold text** and *italics*.
+Convert your documents to HTML. Supports **bold text** and *italics*.
 
 ## Key Features
 
@@ -170,10 +170,10 @@ flowchart LR
                 ? firstHeading.textContent.trim().substring(0, 50) 
                 : 'document';
             
-            await PDFGenerator.generate(preview, filename);
+            await HTMLGenerator.generate(preview, filename);
         } catch (error) {
             console.error('Download error:', error);
-            alert('An error occurred while generating PDF.');
+            alert('An error occurred while generating HTML.');
         } finally {
             downloadButton.disabled = false;
         }
@@ -250,7 +250,7 @@ flowchart LR
         // Initial preview render
         await updatePreview();
         
-        console.info('Markdown to PDF initialized');
+        console.info('Markdown to HTML initialized');
     }
     
     // Public API

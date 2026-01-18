@@ -1,14 +1,12 @@
-/* Preview Styles - PDF Output Styles */
+/* Preview Styles - HTML Output Styles */
 .preview {
-  max-width: 210mm; /* A4 width */
-  min-height: 297mm; /* A4 height */
+  max-width: 800px;
   margin: 0 auto;
-  padding: 15mm 10mm;
+  padding: 2rem;
   background-color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
-  font-size: 11pt;
   line-height: 1.8;
   color: #333;
   word-break: keep-all;
@@ -156,12 +154,6 @@
   background-color: #fafafa;
 }
 
-/* Keep table header and individual rows together during page breaks */
-.preview thead,
-.preview tr {
-  break-inside: avoid;
-}
-
 /* Horizontal Rule */
 .preview hr {
   margin: 2em 0;
@@ -172,8 +164,6 @@
 /* Images */
 .preview img {
   max-width: 100%;
-  max-height: 250mm; /* Fit within A4 page height (297mm - margins) */
-  width: auto;
   height: auto;
   object-fit: contain;
   margin: 0;
@@ -196,7 +186,6 @@
 .preview .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
-  break-inside: avoid;
   margin: 0 !important;
 }
 
@@ -208,9 +197,7 @@
 
 .preview .mermaid svg {
   max-width: 100%;
-  max-height: 240mm; /* Fit within A4 page height (297mm - margins) */
-  height: auto !important;
-  width: auto !important;
+  height: auto;
 }
 
 /* Strikethrough */
@@ -243,125 +230,22 @@
   color: #555;
 }
 
-/* ===========================================
-   Page Break Control for PDF Generation
-   =========================================== */
-
-/* Elements that should not be split across pages */
-/* Note: blockquote and katex use wrappers for page break control */
-.preview pre,
-.preview .mermaid,
-.preview img,
-.preview .code-block,
-.preview .mermaid-wrapper,
-.preview .image-wrapper,
-.preview .no-break {
-  break-inside: avoid;
-}
-
-/* Headings should not be split and should stay with following content */
-.preview h1,
-.preview h2,
-.preview h3,
-.preview h4,
-.preview h5,
-.preview h6 {
-  break-inside: avoid;
-  break-after: avoid;
-  page-break-after: avoid;
-}
-
-/* Keep first element after heading with the heading */
-.preview h1 + *,
-.preview h2 + *,
-.preview h3 + *,
-.preview h4 + *,
-.preview h5 + *,
-.preview h6 + * {
-  break-before: avoid;
-  page-break-before: avoid;
-}
-
-/* List items should try to stay together */
-.preview li {
-  break-inside: avoid;
-}
-
-/* Avoid orphans and widows in paragraphs */
-.preview p {
-  orphans: 3;
-  widows: 3;
-  break-inside: avoid;
-}
-
-/* Force page break classes */
-.preview .page-break-before {
-  break-before: page;
-  page-break-before: always;
-}
-
-.preview .page-break-after {
-  break-after: page;
-  page-break-after: always;
-}
-
-/* Wrapper classes for better control */
-/* Wrapper elements handle margin, inner elements stay margin-free for clean page breaks */
+/* Wrapper classes for layout */
 .preview .blockquote-wrapper,
 .preview .code-block,
-.preview .table-wrapper {
-  display: block;
-  margin: 1em 0;
-}
-
-/* Image and Mermaid wrappers with page-fit constraint */
+.preview .table-wrapper,
 .preview .mermaid-wrapper,
 .preview .image-wrapper {
   display: block;
   margin: 1em 0;
 }
 
-/* Blockquote wrapper - avoid page break inside */
-.preview .blockquote-wrapper {
-  break-inside: avoid;
-}
-
-.preview .mermaid-wrapper .mermaid svg {
-  max-height: 240mm;
-  height: auto !important;
-  width: auto !important;
-}
-
-/* Print Styles for PDF */
+/* Print Styles */
 @media print {
   .preview {
     box-shadow: none;
     padding: 0;
     max-width: none;
     min-height: auto;
-  }
-
-  /* Reinforce page break rules in print mode */
-  .preview pre,
-  .preview .blockquote-wrapper,
-  .preview .mermaid,
-  .preview .katex-display,
-  .preview img {
-    break-inside: avoid !important;
-  }
-
-  .preview thead,
-  .preview tr {
-    break-inside: avoid !important;
-  }
-
-  .preview h1,
-  .preview h2,
-  .preview h3,
-  .preview h4,
-  .preview h5,
-  .preview h6 {
-    break-after: avoid !important;
-    page-break-after: avoid !important;
   }
 }

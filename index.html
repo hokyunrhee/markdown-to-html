@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown to PDF</title>
+    <title>Markdown to HTML</title>
 
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +24,7 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1 class="logo">Markdown to PDF</h1>
+            <h1 class="logo">Markdown to HTML</h1>
         </header>
         
         <!-- Main Content -->
@@ -32,7 +32,7 @@
             <!-- Mobile Tabs -->
             <div class="mobile-tabs">
                 <button id="tab-edit" class="tab-btn active" aria-label="Edit Markdown">Edit</button>
-                <button id="tab-preview" class="tab-btn" aria-label="Preview PDF">Preview</button>
+                <button id="tab-preview" class="tab-btn" aria-label="Preview HTML">Preview</button>
             </div>
 
             <!-- Editor Panel -->
@@ -53,13 +53,13 @@
                 </div>
                 
                 <!-- Download Button (Floating Action Button style) -->
-                <button id="download-btn" class="btn btn-primary btn-floating" aria-label="Download PDF">
+                <button id="download-btn" class="btn btn-primary btn-floating" aria-label="Download HTML">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    <span class="btn-text">Download PDF</span>
+                    <span class="btn-text">Download HTML</span>
                 </button>
             </section>
         </main>
@@ -68,7 +68,7 @@
     <!-- Loading Overlay -->
     <div id="loading" class="loading hidden">
         <div class="loading-spinner"></div>
-        <p>Generating PDF...</p>
+        <p>Generating HTML...</p>
     </div>
 
     <!-- Libraries -->
@@ -86,13 +86,10 @@
     <!-- Mermaid - Diagrams -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     
-    <!-- html2pdf.js - PDF Generation (bundles html2canvas + jsPDF) -->
-    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
-    
     <!-- App Scripts -->
     <script src="js/storage.js"></script>
     <script src="js/markdown.js"></script>
-    <script src="js/pdf.js"></script>
+    <script src="js/html.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
