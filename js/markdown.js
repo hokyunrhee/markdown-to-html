@@ -118,6 +118,7 @@ const MarkdownParser = (function() {
                     throwOnError: false,
                     output: 'html'
                 });
+
                 // Note: Don't wrap in <div> as display math may appear inside <p> tags
                 // Page break control is applied directly to .katex-display via CSS
                 html = html.replace(placeholder, rendered);
@@ -134,17 +135,18 @@ const MarkdownParser = (function() {
      */
     async function renderMermaid(container) {
         const mermaidElements = container.querySelectorAll('.mermaid');
+
         // A4 page height minus margins (in pixels, assuming 96 DPI: 240mm ≈ 907px)
         const maxHeightPx = 907;
-        
+
         for (const element of mermaidElements) {
             const id = element.id || `mermaid-${Date.now()}`;
             const code = element.textContent;
-            
+
             try {
                 const { svg } = await mermaid.render(id + '-svg', code);
                 element.innerHTML = svg;
-                
+
                 // Scale down SVG if it exceeds page height
                 const svgElement = element.querySelector('svg');
                 if (svgElement) {
@@ -180,25 +182,25 @@ const MarkdownParser = (function() {
     async function parse(markdown, container) {
         // Reset mermaid counter for consistent IDs
         mermaidIdCounter = 0;
-        
+
         // Pre-process math expressions
         const { markdown: processedMarkdown, mathBlocks } = preprocessMath(markdown);
-        
+
         // Parse markdown to HTML
         let html = marked.parse(processedMarkdown);
-        
+
         // Post-process math expressions
         html = postprocessMath(html, mathBlocks);
-        
+
         // Set HTML content
         container.innerHTML = html;
-        
+
         // Render mermaid diagrams (async)
         await renderMermaid(container);
-        
+
         // Apply syntax highlighting
         highlightCode(container);
-        
+
         return container.innerHTML;
     }
     
