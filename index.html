@@ -31,7 +31,28 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
+            <div class="header-left">
+                <button id="documents-btn" class="btn btn-outline" aria-label="Open documents">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                        <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                        <path d="M10 18v-6"></path>
+                        <path d="M14 18v-3"></path>
+                    </svg>
+                    <span class="btn-text">Documents</span>
+                </button>
+            </div>
             <h1 class="logo">Markdown to HTML</h1>
+            <div class="header-right">
+                <button id="save-btn" class="btn btn-primary" aria-label="Save document">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span class="btn-text">Save</span>
+                </button>
+            </div>
         </header>
         
         <!-- Main Content -->
@@ -72,6 +93,78 @@
         </main>
     </div>
     
+    <!-- Documents Sidebar Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+    <!-- Documents Sidebar -->
+    <aside id="sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Documents</h2>
+            <button id="sidebar-close" class="sidebar-close-btn" aria-label="Close sidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="sidebar-search">
+            <input id="doc-search" type="text" class="sidebar-search-input" placeholder="Search documents...">
+        </div>
+        <div class="sidebar-actions">
+            <button id="new-doc-btn" class="btn btn-outline sidebar-new-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Document
+            </button>
+        </div>
+        <ul id="doc-list" class="doc-list"></ul>
+        <div id="doc-list-empty" class="doc-list-empty hidden">
+            <p>No saved documents yet.</p>
+        </div>
+    </aside>
+
+    <!-- Save Modal -->
+    <div id="save-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Save Document</h3>
+                <button id="save-modal-close" class="sidebar-close-btn" aria-label="Close modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label class="modal-label" for="doc-title-input">Document Title</label>
+                <input id="doc-title-input" type="text" class="modal-input" placeholder="Enter document title...">
+            </div>
+            <div class="modal-footer">
+                <button id="save-modal-cancel" class="btn btn-outline">Cancel</button>
+                <button id="save-modal-confirm" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsaved Changes Confirm Modal -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Unsaved Changes</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message">You have unsaved changes. What would you like to do?</p>
+            </div>
+            <div class="modal-footer modal-footer-triple">
+                <button id="confirm-save" class="btn btn-primary">Save & Open</button>
+                <button id="confirm-discard" class="btn btn-outline">Discard</button>
+                <button id="confirm-cancel" class="btn btn-outline">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loading" class="loading hidden">
         <div class="loading-spinner"></div>
