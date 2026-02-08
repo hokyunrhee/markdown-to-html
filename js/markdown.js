@@ -11,52 +11,63 @@ const MarkdownParser = (function() {
      * Initialize marked.js with custom settings
      */
     function initMarked() {
-        // Configure marked for GFM
-        marked.setOptions({
-            gfm: true,
-            breaks: true,
-            pedantic: false
-        });
-        
-        // Custom renderer with wrapper classes for page break control
-        const renderer = new marked.Renderer();
-        
-        // Code blocks - wrap in .code-block for page break control
-        renderer.code = function(code, language) {
-            // Handle mermaid diagrams - wrap in .mermaid-wrapper
-            if (language === 'mermaid') {
-                const id = `mermaid-${mermaidIdCounter++}`;
-                return `<div class="mermaid-wrapper"><div class="mermaid" id="${id}">${escapeHtml(code)}</div></div>`;
+        const renderer = {
+            code({ text, lang, escaped }) {
+                const safeLang = (lang || '').replace(/[^a-zA-Z0-9_-]/g, '') || 'text';
+
+                if (lang === 'mermaid') {
+                    const id = `mermaid-${mermaidIdCounter++}`;
+                    return `<div class="mermaid-wrapper"><div class="mermaid" id="${id}">${escapeHtml(text)}</div></div>`;
+                }
+
+                if (safeLang !== 'text' && Prism.languages[safeLang]) {
+                    const highlighted = Prism.highlight(text, Prism.languages[safeLang], safeLang);
+                    return `<div class="code-block"><pre class="language-${safeLang}"><code class="language-${safeLang}">${highlighted}</code></pre></div>`;
+                }
+
+                const safeText = escaped ? text : escapeHtml(text);
+                return `<div class="code-block"><pre><code class="language-${safeLang}">${safeText}</code></pre></div>`;
+            },
+
+            table({ header, rows }) {
+                const validAligns = ['left', 'center', 'right'];
+
+                let headerHtml = '';
+                for (const cell of header) {
+                    const content = this.parser.parseInline(cell.tokens);
+                    const alignAttr = cell.align && validAligns.includes(cell.align)
+                        ? ` align="${cell.align}"` : '';
+                    headerHtml += `<th${alignAttr}>${content}</th>`;
+                }
+
+                let bodyHtml = '';
+                for (const row of rows) {
+                    bodyHtml += '<tr>';
+                    for (const cell of row) {
+                        const content = this.parser.parseInline(cell.tokens);
+                        const alignAttr = cell.align && validAligns.includes(cell.align)
+                            ? ` align="${cell.align}"` : '';
+                        bodyHtml += `<td${alignAttr}>${content}</td>`;
+                    }
+                    bodyHtml += '</tr>';
+                }
+
+                return `<div class="table-wrapper"><table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+            },
+
+            image({ href, title, text }) {
+                const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
+                const altAttr = text ? ` alt="${escapeHtml(text)}"` : '';
+                return `<div class="image-wrapper"><img src="${escapeHtml(href)}"${altAttr}${titleAttr} loading="lazy"></div>`;
+            },
+
+            blockquote({ tokens }) {
+                const body = this.parser.parse(tokens);
+                return `<div class="blockquote-wrapper"><blockquote>${body}</blockquote></div>`;
             }
-            
-            // Handle regular code with Prism highlighting - wrap in .code-block
-            if (language && Prism.languages[language]) {
-                const highlighted = Prism.highlight(code, Prism.languages[language], language);
-                return `<div class="code-block"><pre class="language-${language}"><code class="language-${language}">${highlighted}</code></pre></div>`;
-            }
-            
-            // Fallback for unknown languages - wrap in .code-block
-            return `<div class="code-block"><pre><code class="language-${language || 'text'}">${escapeHtml(code)}</code></pre></div>`;
         };
-        
-        // Tables - wrap in .table-wrapper for page break control
-        renderer.table = function(header, body) {
-            return `<div class="table-wrapper"><table><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
-        };
-        
-        // Images - wrap in .image-wrapper for page break control
-        renderer.image = function(href, title, text) {
-            const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
-            const altAttr = text ? ` alt="${escapeHtml(text)}"` : '';
-            return `<div class="image-wrapper"><img src="${escapeHtml(href)}"${altAttr}${titleAttr} loading="lazy"></div>`;
-        };
-        
-        // Blockquotes - wrap in .blockquote-wrapper for page break control
-        renderer.blockquote = function(quote) {
-            return `<div class="blockquote-wrapper"><blockquote>${quote}</blockquote></div>`;
-        };
-        
-        marked.use({ renderer });
+
+        marked.use({ gfm: true, breaks: true, renderer });
     }
     
     /**
@@ -67,6 +78,7 @@ const MarkdownParser = (function() {
             startOnLoad: false,
             theme: 'default',
             securityLevel: 'strict',
+            suppressErrorRendering: true,
             fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         });
     }

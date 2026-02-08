@@ -28,10 +28,10 @@ Four IIFE modules loaded via `<script>` tags in `index.html` (order matters):
 
 ## External Dependencies (loaded via CDN)
 
-- marked.js 12.0.0 — markdown parsing
-- KaTeX 0.16.9 — math rendering
-- Prism.js 1.29.0 — syntax highlighting
-- Mermaid 10.6.1 — diagram rendering
+- marked.js 17.0.1 — markdown parsing
+- KaTeX 0.16.28 — math rendering
+- Prism.js 1.30.0 — syntax highlighting
+- Mermaid 11.12.2 — diagram rendering
 - Google Fonts Inter — typography
 
 ## Key Conventions
