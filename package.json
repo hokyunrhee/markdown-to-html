@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "A client-side web application that converts Markdown to HTML in the browser.",
   "scripts": {
-    "dev": "npx serve -l 3000"
-  }  
+    "dev": "npx serve -l 3000",
+    "test": "npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
 }
