@@ -364,7 +364,7 @@ flowchart LR
         currentDocId = doc.id;
         lastSavedContent = doc.content;
         closeSidebar();
-        handleEditorInput();
+        updatePreview();
     }
 
     function resetToNewDocument() {
@@ -372,7 +372,7 @@ flowchart LR
         currentDocId = null;
         lastSavedContent = '';
         closeSidebar();
-        handleEditorInput();
+        updatePreview();
     }
 
     // ─── Save Modal ───
@@ -426,7 +426,6 @@ flowchart LR
 
     function closeConfirmModal() {
         confirmModal.classList.add('hidden');
-        pendingOpenDoc = null;
     }
 
     async function handleConfirmSave() {
