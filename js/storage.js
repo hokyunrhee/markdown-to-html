@@ -116,6 +116,16 @@ const Storage = (function() {
         }, DEBOUNCE_DELAY);
     }
 
+    /**
+     * Cancel any pending debounced autosave
+     */
+    function cancelPendingAutosave() {
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+        }
+    }
+
     // ─── Documents CRUD ───
 
     /**
@@ -262,6 +272,7 @@ const Storage = (function() {
         // Autosave
         load: autosaveLoad,
         debouncedSave,
+        cancelPendingAutosave,
         // Documents
         saveDocument,
         updateDocument,

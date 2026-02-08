@@ -12,7 +12,7 @@ Client-side Markdown-to-HTML converter web app. No build tools, no bundler — v
 npm run dev          # starts local server on http://localhost:3000 (uses npx serve)
 ```
 
-No build step, no tests, no linter configured.
+No build step, no linter configured. Playwright E2E tests available via `npm run test`.
 
 ## Architecture
 

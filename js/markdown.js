@@ -48,7 +48,7 @@ const MarkdownParser = (function() {
         renderer.image = function(href, title, text) {
             const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
             const altAttr = text ? ` alt="${escapeHtml(text)}"` : '';
-            return `<div class="image-wrapper"><img src="${href}"${altAttr}${titleAttr} loading="lazy"></div>`;
+            return `<div class="image-wrapper"><img src="${escapeHtml(href)}"${altAttr}${titleAttr} loading="lazy"></div>`;
         };
         
         // Blockquotes - wrap in .blockquote-wrapper for page break control
@@ -66,7 +66,7 @@ const MarkdownParser = (function() {
         mermaid.initialize({
             startOnLoad: false,
             theme: 'default',
-            securityLevel: 'loose',
+            securityLevel: 'strict',
             fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         });
     }

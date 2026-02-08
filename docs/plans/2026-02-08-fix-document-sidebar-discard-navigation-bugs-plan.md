@@ -80,6 +80,8 @@ async function loadContent() {
 
 이것은 edge case이지만, autosave 복원 후에는 `hasUnsavedChanges()`가 항상 false를 반환하므로 보호되지 않습니다.
 
+> **Status: Deferred** — This bug was identified but not fixed in this PR. Tracked as a known limitation.
+
 ### Bug 4 (Minor): `renderDocumentList`에서 `query`가 `undefined`로 전달될 때 falsy 처리
 
 **File:** `js/app.js:244-248`
@@ -92,6 +94,8 @@ async function renderDocumentList(query) {
 ```
 
 `openSidebar()`에서 `renderDocumentList()`를 인자 없이 호출하므로 `query`는 `undefined`입니다. 이는 동작하지만, `handleDocSearch()`에서 빈 문자열(`''`)을 전달하면 falsy로 처리되어 검색이 아닌 전체 목록을 보여줍니다. 이것은 사실상 올바른 동작이지만, 명시적이지 않습니다.
+
+> **Status: Deferred** — This bug was identified but not fixed in this PR. Tracked as a known limitation.
 
 ## Acceptance Criteria
 

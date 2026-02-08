@@ -45,10 +45,15 @@ const App = (function() {
     let debounceTimer = null;
     const DEBOUNCE_DELAY = 300;
 
+    // Generation counter to discard stale renders
+    let previewGeneration = 0;
+
     // Document state
     let currentDocId = null;       // id of loaded saved document (null = new/unsaved)
     let lastSavedContent = '';     // content at last save/load point for change detection
     let pendingOpenDoc = null;     // document waiting to open after confirm dialog
+    let saveBusy = false;          // guard against double-click on save modal buttons
+    let confirmBusy = false;       // guard against double-click on confirm modal buttons
 
     // Default sample markdown
     const sampleMarkdown = `# Markdown to HTML Converter
@@ -160,10 +165,15 @@ flowchart LR
     // ─── Preview ───
 
     async function updatePreview() {
+        const generation = ++previewGeneration;
         const content = editor.value;
         try {
             await MarkdownParser.parse(content, preview);
+            // If a newer render started while we were awaiting, the DOM is already
+            // overwritten by the newer call's synchronous innerHTML assignment,
+            // so no additional cleanup needed here.
         } catch (error) {
+            if (generation !== previewGeneration) return;
             console.error('Preview update error:', error);
             preview.innerHTML = '<p class="error">Preview error occurred.</p>';
         }
@@ -272,15 +282,15 @@ flowchart LR
                 li.innerHTML = `
                     <div class="doc-list-item-info">
                         <div class="doc-list-item-title">${escapeHtml(doc.title)}</div>
-                        <div class="doc-list-item-date">${dateStr}</div>
+                        <div class="doc-list-item-date">${escapeHtml(dateStr)}</div>
                     </div>
                     <div class="doc-list-item-actions">
-                        <button class="doc-action-btn rename" aria-label="Rename" data-id="${doc.id}">
+                        <button class="doc-action-btn rename" aria-label="Rename" data-id="${escapeHtml(String(doc.id))}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                             </svg>
                         </button>
-                        <button class="doc-action-btn delete" aria-label="Delete" data-id="${doc.id}">
+                        <button class="doc-action-btn delete" aria-label="Delete" data-id="${escapeHtml(String(doc.id))}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 6h18"></path>
                                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
@@ -289,23 +299,6 @@ flowchart LR
                         </button>
                     </div>
                 `;
-
-                // Click on item info to open document
-                li.querySelector('.doc-list-item-info').addEventListener('click', () => {
-                    requestOpenDocument(doc);
-                });
-
-                // Rename
-                li.querySelector('.rename').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    startRename(li, doc);
-                });
-
-                // Delete
-                li.querySelector('.delete').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleDeleteDocument(doc.id);
-                });
 
                 docList.appendChild(li);
             });
@@ -360,6 +353,7 @@ flowchart LR
     }
 
     function loadDocument(doc) {
+        Storage.cancelPendingAutosave();
         editor.value = doc.content;
         currentDocId = doc.id;
         lastSavedContent = doc.content;
@@ -368,6 +362,7 @@ flowchart LR
     }
 
     function resetToNewDocument() {
+        Storage.cancelPendingAutosave();
         editor.value = '';
         currentDocId = null;
         lastSavedContent = '';
@@ -396,12 +391,16 @@ flowchart LR
     }
 
     async function handleSaveConfirm() {
+        if (saveBusy) return;
         const title = docTitleInput.value.trim();
         if (!title) {
             docTitleInput.focus();
             return;
         }
 
+        saveBusy = true;
+        saveModalConfirm.disabled = true;
+        saveModalCancel.disabled = true;
         try {
             const content = editor.value;
             if (currentDocId) {
@@ -415,6 +414,10 @@ flowchart LR
         } catch (error) {
             console.error('Save failed:', error);
             alert('Failed to save document.');
+        } finally {
+            saveBusy = false;
+            saveModalConfirm.disabled = false;
+            saveModalCancel.disabled = false;
         }
     }
 
@@ -429,6 +432,11 @@ flowchart LR
     }
 
     async function handleConfirmSave() {
+        if (confirmBusy) return;
+        confirmBusy = true;
+        confirmSave.disabled = true;
+        confirmDiscard.disabled = true;
+        confirmCancel.disabled = true;
         // Save current work first, then open pending doc
         const title = getAutoTitle();
         try {
@@ -447,6 +455,11 @@ flowchart LR
             alert('Failed to save document.');
             closeConfirmModal();
             return;
+        } finally {
+            confirmBusy = false;
+            confirmSave.disabled = false;
+            confirmDiscard.disabled = false;
+            confirmCancel.disabled = false;
         }
 
         closeConfirmModal();
@@ -456,6 +469,11 @@ flowchart LR
     function handleConfirmDiscard() {
         closeConfirmModal();
         openPendingDoc();
+    }
+
+    function handleConfirmCancel() {
+        closeConfirmModal();
+        pendingOpenDoc = null;
     }
 
     function openPendingDoc() {
@@ -579,6 +597,38 @@ flowchart LR
         docSearch.addEventListener('input', handleDocSearch);
         newDocBtn.addEventListener('click', requestNewDocument);
 
+        // Document list event delegation
+        docList.addEventListener('click', async (e) => {
+            const renameBtn = e.target.closest('.doc-action-btn.rename');
+            if (renameBtn) {
+                e.stopPropagation();
+                const id = Number(renameBtn.dataset.id);
+                const li = renameBtn.closest('.doc-list-item');
+                const docs = await Storage.getAllDocuments();
+                const doc = docs.find(d => d.id === id);
+                if (doc && li) startRename(li, doc);
+                return;
+            }
+
+            const deleteBtn = e.target.closest('.doc-action-btn.delete');
+            if (deleteBtn) {
+                e.stopPropagation();
+                const id = Number(deleteBtn.dataset.id);
+                handleDeleteDocument(id);
+                return;
+            }
+
+            const itemInfo = e.target.closest('.doc-list-item-info');
+            if (itemInfo) {
+                const li = itemInfo.closest('.doc-list-item');
+                const id = Number(li.dataset.id);
+                const docs = await Storage.getAllDocuments();
+                const doc = docs.find(d => d.id === id);
+                if (doc) requestOpenDocument(doc);
+                return;
+            }
+        });
+
         // Save modal
         saveModalClose.addEventListener('click', closeSaveModal);
         saveModalCancel.addEventListener('click', closeSaveModal);
@@ -591,7 +641,7 @@ flowchart LR
         // Confirm modal
         confirmSave.addEventListener('click', handleConfirmSave);
         confirmDiscard.addEventListener('click', handleConfirmDiscard);
-        confirmCancel.addEventListener('click', closeConfirmModal);
+        confirmCancel.addEventListener('click', handleConfirmCancel);
 
         // Keyboard shortcut: Ctrl/Cmd+S to save
         document.addEventListener('keydown', (e) => {
