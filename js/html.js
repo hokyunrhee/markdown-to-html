@@ -5,8 +5,8 @@
 
 const HTMLGenerator = (function() {
     // CDN URLs for external CSS
-    const KATEX_CSS_URL = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
-    const PRISM_CSS_URL = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css';
+    const KATEX_CSS_URL = 'https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css';
+    const PRISM_CSS_URL = 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-tomorrow.min.css';
     
     // CSS cache to avoid re-fetching
     const cssCache = {};
